@@ -15,7 +15,8 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from datetime import date
 from typing import Dict
-from datetime import datetime
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 
 class UserView(APIView):
@@ -45,6 +46,7 @@ class UserView(APIView):
 
 class AccountView(APIView):
     permission_classes = [AccountTypePermission, IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     @handle_exceptions
     def get(self, request: HttpRequest, account_id: str) -> Response:
@@ -58,7 +60,7 @@ class AccountView(APIView):
             Response: A Response object containing the serialized account data.
         """
         account = self._check_account_permission(request, account_id)
-        transactions = get_transactions(account, 30)
+        transactions = get_transactions(account)
         results = {
             'account': InvestmentAccountSerializer(account).data,
             'transcations': transactions or []

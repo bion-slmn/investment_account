@@ -18,6 +18,6 @@ urlpatterns = [
     path('register-user/', UserView.as_view(), name='register-user'),
 
     # token routes and login 
-    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), 
 ]

@@ -38,10 +38,15 @@ AccountTypes:
 
 
 class Transaction(models.Model):
+    """
+    Represents a financial transaction within an investment account.
+    """
+
     class TransactionTypes(models.TextChoices):
         DEPOSIT = 'Deposit'
         WITHDRAWAL = 'Withdrawal'
 
+    transaction_by = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_type = models.CharField(
         max_length=15, choices=TransactionTypes.choices)
     created_at = models.DateTimeField(auto_now=True)
@@ -49,7 +54,6 @@ class Transaction(models.Model):
         'Deposit is + and withdraw -',
         max_digits=10,
         decimal_places=2)
-    transaction_by = models.ForeignKey(User, on_delete=models.CASCADE)
     account = models.ForeignKey(
         InvestmentAccount,
         on_delete=models.CASCADE,

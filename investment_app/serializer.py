@@ -29,7 +29,7 @@ class InvestmentAccountSerializer(serializers.ModelSerializer):
             serializers.ValidationError: If the balance is negative.
         """
 
-        if validated_data.get('balance') < 0:
+        if validated_data.get('balance', 0) < 0:
             raise serializers.ValidationError('Balance cant be a negative')
         return super().create(validated_data)
     

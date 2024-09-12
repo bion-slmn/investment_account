@@ -47,7 +47,6 @@ def create_transaction(
     Returns:
         None: This function does not return a value.
     """
-
     amount = request.data.get('balance', 0)
     if amount != 0:
         account_changed.send(

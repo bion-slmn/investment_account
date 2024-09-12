@@ -13,10 +13,12 @@ def create_transaction(sender, amount, user, instance, **kwargs):
     The amount indicates the change, and the user is the one making the change.
     """
     transaction_type = 'Withdrawal' if amount < 0 else 'Deposit'
-
+    
+    
     Transaction.objects.create(
         transaction_type=transaction_type,
         amount=amount,
         transaction_by=user,
         account=instance
     )
+
