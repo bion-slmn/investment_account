@@ -6,8 +6,13 @@ from .decorator import handle_exceptions
 from rest_framework.response import Response
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from .serializer import InvestmentAccountSerializer, UserSerializer, DateSerialializer
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from .serializer import (
+    InvestmentAccountSerializer, 
+    UserSerializer, 
+    DateSerialializer)
+from rest_framework.permissions import (AllowAny, 
+                                        IsAuthenticated, 
+                                        IsAdminUser)
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
 from .utils import get_transactions, create_transaction, delete_caches
@@ -19,8 +24,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 
-
-
 class UserView(APIView):
     permission_classes = [AllowAny]
 
@@ -29,7 +32,8 @@ class UserView(APIView):
         """
         Creates a new user based on the provided data.
         Args:
-            request (HttpRequest): The HTTP request object containing the data.
+            request (HttpRequest): The HTTP request object
+            containing the data.
 
         Returns:
             Response: A response object containing the created user data
@@ -55,7 +59,8 @@ class AccountView(APIView):
         """
         Handles GET requests for retrieving an investment account by its ID.
         Args:
-            request (HttpRequest): The HTTP request object containing the request data.
+            request (HttpRequest): The HTTP request object containing 
+                    the request data.
             account_id (int): The ID of the investment account to retrieve.
 
         Returns:
@@ -63,7 +68,7 @@ class AccountView(APIView):
         """
         cache_key = f'account_id_{account_id}'
         account = self._check_account_permission(request, account_id)
-        
+
         if cached_data := cache.get(cache_key):
             results = cached_data
         else:
@@ -72,7 +77,7 @@ class AccountView(APIView):
                 'account': InvestmentAccountSerializer(account).data,
                 'transcations': transactions or []
             }
-            cache.set(cache_key, results, timeout=5*60*60)
+            cache.set(cache_key, results, timeout=5 * 60 * 60)
         return Response(results)
 
     @handle_exceptions
@@ -81,7 +86,8 @@ class AccountView(APIView):
         Creates a new investment account based on the provided data.
 
         Args:
-            request (HttpRequest): The HTTP request object containing the data for the new account.
+            request (HttpRequest): The HTTP request object containing 
+            the data for the new account.
 
         Returns:
             Response: A response object containing the created account data
@@ -107,15 +113,19 @@ class AccountView(APIView):
         """
         Updates a specified account with new data after verifying permissions.
         Args:
-            request (HttpRequest): The HTTP request object containing the new data
-            account_id (str): The unique identifier of the account to be updated.
+            request (HttpRequest): The HTTP request object 
+                    containing the new data
+            account_id (str): The unique identifier of the
+                account to be updated.
 
         Returns:
-            Response: A response object containing the updated account data
+            Response: A response object containing
+                the updated account data
               if successful, or error messages if validation fails.
 
         Raises:
-            PermissionError: If the user does not have permission to update the account.
+            PermissionError: If the user does not have permission
+                to update the account.
             NotFoundError: If the account with the specified ID does not exist.
         """
 
@@ -125,7 +135,8 @@ class AccountView(APIView):
         if serializer.is_valid():
             instance = serializer.save()
             create_transaction(request, instance)
-            delete_caches([f'account_id_{account_id}', f'user_id_{instance.owner}'])
+            delete_caches(
+                [f'account_id_{account_id}', f'user_id_{instance.owner}'])
             return Response(serializer.data, 200)
         return Response(serializer.errors, 400)
 
@@ -135,14 +146,18 @@ class AccountView(APIView):
         Deletes a specified account after verifying permissions.
 
         Args:
-            request (HttpRequest): The HTTP request object containing the request data.
-            account_id (str): The unique identifier of the account to be deleted.
+            request (HttpRequest): The HTTP request object
+                containing the request data.
+            account_id (str): The unique identifier of the
+                account to be deleted.
 
         Returns:
-            Response: A response object indicating the result of the deletion operation.
+            Response: A response object indicating
+                 the result of the deletion operation.
 
         Raises:
-            PermissionError: If the user does not have permission to delete the account.
+            PermissionError: If the user does not have
+                permission to delete the account.
             NotFoundError: If the account with the specified ID does not exist.
         """
 
@@ -197,21 +212,21 @@ class AdminView(APIView):
         today = date.today()
         start_date = request.query_params.get('start_date') or today
         end_date = request.query_params.get('end_date')
-        
+
         cache_key = f'user_id_{user_id}'
         cache_data = cache.get(cache_key)
-        
+
         if not end_date and cache_data:
             results = cache_data
-            
+
         else:
-            user = self.get_filtered_user(user_id, start_date, end_date)     
+            user = self.get_filtered_user(user_id, start_date, end_date)
             results = self.get_user_transactions(user, start_date, end_date)
 
-            
         return Response(results, 200)
-    
-    def get_user_transactions(self, user: User, start_date: date, end_date: date = None) -> Dict[str, str]:
+
+    def get_user_transactions(
+            self, user: User, start_date: date, end_date: date = None) -> Dict[str, str]:
         """Retrieve a summary of a user's transactions and total balance.
 
         Args:
@@ -223,10 +238,10 @@ class AdminView(APIView):
 
         results = {
             'Username': user.username,
-            'total_balance' : 0,
-            'transactions' : [],
-            'From' :start_date,
-            'To' :end_date or "All Transactions"
+            'total_balance': 0,
+            'transactions': [],
+            'From': start_date,
+            'To': end_date or "All Transactions"
         }
         for account in user.accounts.all():
             results['total_balance'] += account.balance
@@ -237,11 +252,15 @@ class AdminView(APIView):
 
         if not end_date:
             cache_key = f'user_id_{user.id}'
-            cache.set(cache_key, results, timeout=2*60*60)
+            cache.set(cache_key, results, timeout=2 * 60 * 60)
 
         return results
-    
-    def get_filtered_user(self, user_id: str, start_date: date, end_date: date = None) -> User:
+
+    def get_filtered_user(
+            self,
+            user_id: str,
+            start_date: date,
+            end_date: date = None) -> User:
         """Retrieve a user and their associated transactions within a specified date range.
 
         Args:
@@ -260,15 +279,17 @@ class AdminView(APIView):
         if end_date is None:
             transactions = Transaction.objects.all()
         else:
-            serializer = DateSerialializer(data={'start_date': start_date, 'end_date': end_date})
+            serializer = DateSerialializer(
+                data={
+                    'start_date': start_date,
+                    'end_date': end_date})
             serializer.is_valid(raise_exception=True)
 
             transactions = Transaction.objects.filter(
                 created_at__lte=f'{start_date} 23:59:59',
                 created_at__gte=f'{end_date} 23:59:59',
-                )
-                    
+            )
+
         queryset = User.objects.prefetch_related(
             Prefetch('accounts__transactions', queryset=transactions))
         return get_object_or_404(queryset, id=user_id)
-

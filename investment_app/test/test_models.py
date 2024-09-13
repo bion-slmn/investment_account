@@ -3,10 +3,14 @@ from django.contrib.auth.models import User
 from ..models import InvestmentAccount, Transaction
 from decimal import Decimal
 
+
 class TestInvestmentAccount(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass")
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass")
 
     def test_creation(self):  # sourcery skip: class-extract-method
         account = InvestmentAccount(
@@ -26,19 +30,22 @@ class TestInvestmentAccount(TestCase):
     def test_default_values(self):
         account = InvestmentAccount(owner=self.user)
         self.assertEqual(account.balance, 0.0)
-        self.assertEqual(account.account_type, InvestmentAccount.AccountTypes.ACCOUNT_1)
+        self.assertEqual(account.account_type,
+                         InvestmentAccount.AccountTypes.ACCOUNT_1)
 
     def test_str_method(self):
-        account = InvestmentAccount.objects.create(name="Test Account", owner=self.user)
+        account = InvestmentAccount.objects.create(
+            name="Test Account", owner=self.user)
         self.assertEqual(str(account), "Test Account")
 
     def test_foreign_key_relationship(self):
-        account = InvestmentAccount.objects.create(name="Test Account", owner=self.user)
+        account = InvestmentAccount.objects.create(
+            name="Test Account", owner=self.user)
         self.assertEqual(account.owner, self.user)
         self.assertEqual(account.owner.pk, self.user.pk)
 
     def test_enum_choices(self):
-        choices = list(InvestmentAccount.AccountTypes.choices) 
+        choices = list(InvestmentAccount.AccountTypes.choices)
         self.assertEqual(len(choices), 3)
         self.assertEqual(choices[0], ('ACC1', 'Account 1'))
         self.assertEqual(choices[1], ('ACC2', 'Account 2'))
@@ -57,7 +64,8 @@ class TestInvestmentAccount(TestCase):
         self.assertEqual(account.name, "Full Account")
         self.assertEqual(account.description, "A full account with all fields")
         self.assertEqual(account.balance, 5000.00)
-        self.assertEqual(account.account_type, InvestmentAccount.AccountTypes.ACCOUNT_2)
+        self.assertEqual(account.account_type,
+                         InvestmentAccount.AccountTypes.ACCOUNT_2)
         self.assertEqual(account.owner, self.user)
 
     def test_update_fields(self):
@@ -67,18 +75,19 @@ class TestInvestmentAccount(TestCase):
             balance=2000.00,
             account_type=InvestmentAccount.AccountTypes.ACCOUNT_1
         )
-        
+
         account.name = "Updated Name"
         account.description = "New Description"
         account.balance = 3000.00
         account.account_type = InvestmentAccount.AccountTypes.ACCOUNT_2
-        
+
         account.save()
-        
+
         self.assertEqual(account.name, "Updated Name")
         self.assertEqual(account.description, "New Description")
         self.assertEqual(account.balance, 3000.00)
-        self.assertEqual(account.account_type, InvestmentAccount.AccountTypes.ACCOUNT_2)
+        self.assertEqual(account.account_type,
+                         InvestmentAccount.AccountTypes.ACCOUNT_2)
 
     def test_delete(self):
         account = InvestmentAccount.objects.create(
@@ -87,11 +96,12 @@ class TestInvestmentAccount(TestCase):
             balance=4000.00,
             account_type=InvestmentAccount.AccountTypes.ACCOUNT_3
         )
-        
-        account.delete()
-        
-        self.assertEqual(InvestmentAccount.objects.filter(pk=account.pk).count(), 0)
 
+        account.delete()
+
+        self.assertEqual(
+            InvestmentAccount.objects.filter(
+                pk=account.pk).count(), 0)
 
 
 class TransactionModelTest(TestCase):
@@ -99,7 +109,8 @@ class TransactionModelTest(TestCase):
         """
         Set up the test environment by creating users and investment accounts.
         """
-        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.user = User.objects.create_user(
+            username='testuser', password='testpass')
         self.account = InvestmentAccount.objects.create(
             name='Test Account',
             description='Test Description',
@@ -117,7 +128,9 @@ class TransactionModelTest(TestCase):
             amount=Decimal('100.00'),
             account=self.account
         )
-        self.assertEqual(transaction.transaction_type, Transaction.TransactionTypes.DEPOSIT)
+        self.assertEqual(
+            transaction.transaction_type,
+            Transaction.TransactionTypes.DEPOSIT)
         self.assertEqual(transaction.amount, Decimal('100.00'))
         self.assertEqual(transaction.account, self.account)
         self.assertEqual(transaction.transaction_by, self.user)
@@ -132,7 +145,9 @@ class TransactionModelTest(TestCase):
             amount=Decimal('50.00'),
             account=self.account
         )
-        self.assertEqual(transaction.transaction_type, Transaction.TransactionTypes.WITHDRAWAL)
+        self.assertEqual(
+            transaction.transaction_type,
+            Transaction.TransactionTypes.WITHDRAWAL)
         self.assertEqual(transaction.amount, Decimal('50.00'))
         self.assertEqual(transaction.account, self.account)
         self.assertEqual(transaction.transaction_by, self.user)
@@ -144,7 +159,7 @@ class TransactionModelTest(TestCase):
         with self.assertRaises(ValueError):
             Transaction.objects.create(
                 transaction_by=self.user,
-                transaction_type='InvalidType', 
+                transaction_type='InvalidType',
                 amount=Decimal('50.00'),
                 account='self.account'
             )
@@ -174,4 +189,5 @@ class TransactionModelTest(TestCase):
         self.assertEqual(transaction.transaction_by, self.user)
         self.assertEqual(transaction.account, self.account)
         self.assertIn(transaction, self.account.transactions.all())
-        self.assertIn(transaction, self.user.transaction_set.all())  # Reverse relationship
+        # Reverse relationship
+        self.assertIn(transaction, self.user.transaction_set.all())

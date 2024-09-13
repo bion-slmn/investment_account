@@ -13,7 +13,7 @@ class UserViewTest(TestCase):
         Set up the test environment by initializing the APIClient.
         """
         self.client = APIClient()
-        self.url = reverse('register-user')  
+        self.url = reverse('register-user')
 
     def test_create_user_success(self):
         """
@@ -59,23 +59,26 @@ class UserViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-
 class AccountViewTest(TestCase):
     def setUp(self):
         """
         Set up the test environment.
         """
         self.client = APIClient()
-        
+
         # Create users with different roles
-      
-        self.user = User.objects.create_user(username='user', password='userpassword')
-    
+
+        self.user = User.objects.create_user(
+            username='user', password='userpassword')
+
         # Create investment accounts with different types
-        self.account_1 = InvestmentAccount.objects.create(name='Account 1', account_type='ACC1', owner=self.user)
-        self.account_2 = InvestmentAccount.objects.create(name='Account 2.0', account_type='ACC2', owner=self.user)
-        self.account_3 = InvestmentAccount.objects.create(name='Account 3', account_type='ACC3', owner=self.user)
-        
+        self.account_1 = InvestmentAccount.objects.create(
+            name='Account 1', account_type='ACC1', owner=self.user)
+        self.account_2 = InvestmentAccount.objects.create(
+            name='Account 2.0', account_type='ACC2', owner=self.user)
+        self.account_3 = InvestmentAccount.objects.create(
+            name='Account 3', account_type='ACC3', owner=self.user)
+
         # Create a transaction for account type 2
         Transaction.objects.create(
             transaction_by=self.user,
@@ -83,14 +86,17 @@ class AccountViewTest(TestCase):
             amount=200.00,
             account=self.account_2
         )
-        response = self.client.post(reverse('login'),  {'username':'user', 'password':'userpassword'}, format='json')
+        response = self.client.post(
+            reverse('login'), {
+                'username': 'user', 'password': 'userpassword'}, format='json')
         self.token = response.data
 
     def test_view_account_type_1(self):
         """
         Test that a user with permissions to view Account Type 1 can do so.
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_1.id])
         response = self.client.get(url)
 
@@ -102,7 +108,8 @@ class AccountViewTest(TestCase):
         """
         Test that a user with full permissions for Account Type 2 can view the account and transactions.
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_2.id])
         response = self.client.get(url)
         print(response.data)
@@ -114,12 +121,15 @@ class AccountViewTest(TestCase):
         """
         Test that a user without permission to view Account Type 3 receives a permission denied error.
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_3.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'Permission Denied, You do not have permission to perform this action.')
+        self.assertEqual(
+            response.data['error'],
+            'Permission Denied, You do not have permission to perform this action.')
 
     def test_unauthenticated_access(self):
         """
@@ -127,25 +137,28 @@ class AccountViewTest(TestCase):
         """
         url = reverse('view-account', args=[self.account_1.id])
         response = self.client.get(url)
-        
+
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @patch('investment_app.views.get_transactions')
     @patch('investment_app.views.AccountView._check_account_permission')
-    def test_successful_permission_check(self, mock_check_permission, mock_get_transactions):
+    def test_successful_permission_check(
+            self,
+            mock_check_permission,
+            mock_get_transactions):
         # Mock _check_account_permission to return the account
         mock_check_permission.return_value = self.account_3
         mock_get_transactions.return_value = []
-        
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_3.id])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('account', response.data)
-        
-        mock_check_permission.assert_called_once()
 
+        mock_check_permission.assert_called_once()
 
 
 class CreateAnAccountTest(TestCase):
@@ -154,11 +167,14 @@ class CreateAnAccountTest(TestCase):
         Set up the test environment.
         """
         self.client = APIClient()
-        
-        self.user = User.objects.create_user(username='user', password='password')
-        
-        response = self.client.post(reverse('login'),  {'username':'user', 'password':'password'}, format='json')
-        self.token = response.data     
+
+        self.user = User.objects.create_user(
+            username='user', password='password')
+
+        response = self.client.post(
+            reverse('login'), {
+                'username': 'user', 'password': 'password'}, format='json')
+        self.token = response.data
         # Create some test data
 
         self.account_1 = {
@@ -175,8 +191,10 @@ class CreateAnAccountTest(TestCase):
             'name': 'Account 3',
             'account_type': 'ACC3'
         }
+
     def creation__and_account_type_1(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('create-account')
         response = self.client.post(url, self.account_1, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -186,10 +204,12 @@ class CreateAnAccountTest(TestCase):
         """
         Test account creation with a positive balance.
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('create-account')
-        response = self.client.post(url, self.account_data_with_balance, format='json')
-        
+        response = self.client.post(
+            url, self.account_data_with_balance, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Account 2.0')
         self.assertEqual(response.data['balance'], '200.00')
@@ -199,22 +219,25 @@ class CreateAnAccountTest(TestCase):
         """
         Test account creation without a balance.
         """
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('create-account')
-        response = self.client.post(url, self.account_data_without_balance, format='json')
+        response = self.client.post(
+            url, self.account_data_without_balance, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Account 3')
         self.assertEqual(response.data['balance'], '0.00')
         # balance is 0 so no tranction is created
-        self.assertEqual(Transaction.objects.all().count(), 0) 
+        self.assertEqual(Transaction.objects.all().count(), 0)
 
     def test_create_account_without_permission(self):
         """
         Test that a user without permission cannot create an account.
         """
         url = reverse('create-account')
-        response = self.client.post(url, self.account_data_with_balance, format='json')
-        
+        response = self.client.post(
+            url, self.account_data_with_balance, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -224,26 +247,34 @@ class AccountUpdateViewTest(TestCase):
         Set up the test environment.
         """
         self.client = APIClient()
-      
-        self.user = User.objects.create_user(username='user', password='password')
-  
-        response = self.client.post(reverse('login'),  {'username':'user', 'password':'password'}, format='json')
+
+        self.user = User.objects.create_user(
+            username='user', password='password')
+
+        response = self.client.post(
+            reverse('login'), {
+                'username': 'user', 'password': 'password'}, format='json')
         self.token = response.data
         # Create some test data
-        self.account_1 = InvestmentAccount.objects.create(name='Account 1', account_type='ACC1', owner=self.user)
-        self.account_2 = InvestmentAccount.objects.create(name='Account 2.0', account_type='ACC2', owner=self.user)
-        self.account_2_1 = InvestmentAccount.objects.create(name='Account 2.0', account_type='ACC2', owner=self.user, balance=1000)
-        self.account_3 = InvestmentAccount.objects.create(name='Account 3', account_type='ACC3', owner=self.user)
-        
+        self.account_1 = InvestmentAccount.objects.create(
+            name='Account 1', account_type='ACC1', owner=self.user)
+        self.account_2 = InvestmentAccount.objects.create(
+            name='Account 2.0', account_type='ACC2', owner=self.user)
+        self.account_2_1 = InvestmentAccount.objects.create(
+            name='Account 2.0', account_type='ACC2', owner=self.user, balance=1000)
+        self.account_3 = InvestmentAccount.objects.create(
+            name='Account 3', account_type='ACC3', owner=self.user)
+
     def test_deposit_account_success(self):
         """
         Test that a user with permission can successfully update an account.
         """
         url = reverse('update-account', args=[self.account_2.id])
         data = {'balance': 1000}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['balance'], '1000.00')
         trans = Transaction.objects.all()
@@ -256,9 +287,10 @@ class AccountUpdateViewTest(TestCase):
         """
         url = reverse('update-account', args=[self.account_2_1.id])
         data = {'balance': -200}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['balance'], '800.00')
         trans = Transaction.objects.all()
@@ -271,25 +303,28 @@ class AccountUpdateViewTest(TestCase):
         """
         url = reverse('update-account', args=[self.account_2.id])
         data = {'balance': -200}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         trans = Transaction.objects.all()
         self.assertEqual(trans.count(), 0)
-       
-        
+
     def test_update_account_permission_denied(self):
         """
         Test that a user without permission cannot update an account they do not own.
         """
         url = reverse('update-account', args=[self.account_1.id])
         data = {'balance': 1000}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['error'], 'Permission Denied, You do not have permission to perform this action.')
+        self.assertEqual(
+            response.data['error'],
+            'Permission Denied, You do not have permission to perform this action.')
 
     def test_update_account_permission_denied(self):
         """
@@ -297,59 +332,73 @@ class AccountUpdateViewTest(TestCase):
         """
         url = reverse('update-account', args=[self.account_3.id])
         data = {'balance': 1000}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
-        
+
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['error'], 'Permission Denied, You do not have permission to perform this action.')
-        
+        self.assertEqual(
+            response.data['error'],
+            'Permission Denied, You do not have permission to perform this action.')
+
     def test_update_account_invalid_data(self):
         """
         Test that invalid data results in a validation error.
         """
         url = reverse('update-account', args=[self.account_2.id])
         data = {'balance': 'value'}
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-      
+
+
 class DeleteAccount(TestCase):
     def setUp(self):
         """
         Set up the test environment.
         """
         self.client = APIClient()
-      
-        self.user = User.objects.create_user(username='user', password='password')
-  
-        response = self.client.post(reverse('login'),  {'username':'user', 'password':'password'}, format='json')
+
+        self.user = User.objects.create_user(
+            username='user', password='password')
+
+        response = self.client.post(
+            reverse('login'), {
+                'username': 'user', 'password': 'password'}, format='json')
         self.token = response.data
         # Create some test data
-        self.account_1 = InvestmentAccount.objects.create(name='Account 1', account_type='ACC1', owner=self.user)
-        self.account_2 = InvestmentAccount.objects.create(name='Account 2.0', account_type='ACC2', owner=self.user)
-        self.account_3 = InvestmentAccount.objects.create(name='Account 3', account_type='ACC3', owner=self.user)
-    
+        self.account_1 = InvestmentAccount.objects.create(
+            name='Account 1', account_type='ACC1', owner=self.user)
+        self.account_2 = InvestmentAccount.objects.create(
+            name='Account 2.0', account_type='ACC2', owner=self.user)
+        self.account_3 = InvestmentAccount.objects.create(
+            name='Account 3', account_type='ACC3', owner=self.user)
+
     def test_delete_account_1(self):
         url = reverse('delete-account', args=[self.account_1.id])
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_account_2(self):
         url = reverse('delete-account', args=[self.account_2.id])
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_account_3(self):
         url = reverse('delete-account', args=[self.account_3.id])
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_unkouwn_account_1(self):
         url = reverse('delete-account', args=[41])
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-      

@@ -66,6 +66,15 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ['user_permissions', 'groups', 'is_superuser', 'is_active']
 
     def create(self, validated_data):
+        """
+        create a user by hashing the password
+
+        Args:
+            validated_data (dict): user data
+
+        Returns:
+            user instance
+        """
         if 'password' in validated_data:
             validated_data['password'] = make_password(validated_data['password'])
 
