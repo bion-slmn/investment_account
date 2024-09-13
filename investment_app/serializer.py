@@ -81,3 +81,15 @@ class TransactionSeializer(serializers.ModelSerializer):
 class DateSerialializer(serializers.Serializer):
     start_date = serializers.DateField()
     end_date = serializers.DateField()
+
+    def validate(self, data):
+        """
+        Ensure that the end_date is not earlier than the start_date.
+        """
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        if end_date and end_date > start_date:
+            raise serializers.ValidationError("End date cannot be after the start date.")
+        
+        return data

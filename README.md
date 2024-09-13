@@ -1,8 +1,40 @@
 # investment_account
 
-curl localhost:8000/api/register-user/ -X POST -H "Content-Type: application/json
-" -d '{"username": "bionsolomon2", "password": "123455"}' | jq
+This project create an API'S for managing an Investment Accounts
+A user can have 3 account types name ACC1, ACC2, ACC3.
+An account must have, a name, owner, account type and balance with a default of 0.
+When ever the balance changes a transaction is recorded.
+A withdraw the balance is passed as a negavite number and all positive are deposits.
 
+#### Account Permissions
+
+ACC1, a user can only View the account and the transactions
+ACC2, a user can read, create, update and even delete the account and all the transactions
+ACC3, a user can only create the account
+
+## USER CREATION
+
+### Regular User
+
+The user has the register by passing a unique username and password
+
+#### Endpoint:
+
+```
+POST api/register-user/
+```
+
+#### Example
+
+```
+curl localhost:8000/api/register-user/ \
+-X POST -H "Content-Type: application/json "\
+-d '{"username": "bionsolomon2", "password": "123455"}' | jq
+```
+
+#### Expected Results
+
+```
 {
 "id": 2,
 "password": "123455",
@@ -18,34 +50,79 @@ curl localhost:8000/api/register-user/ -X POST -H "Content-Type: application/jso
 "groups": [],
 "user_permissions": []
 }
+```
 
-curl localhost:8000/api/login/ -X POST -H "Content-Type: application/json" -d '{"
-username": "bionsolomon2", "password": "123455"}' | jq
+### Register ADMIN
 
+Use the Django provide command to create and Admin
+
+```
+python3 manage.py createsuperuser
+```
+
+## LOGIN IN
+
+A user must pass the user name and passowrd to the api to get the access token
+
+> POST api/login/
+
+#### Example
+
+```
+curl localhost:8000/api/login/ -X POST \
+ -H "Content-Type: application/json" \
+ -d '{"username": "bionsolomon2", "password": "*********"}'
+```
+
+#### Expeccted Results
+
+```
 {
-"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcyNjA0MjQ3MiwiaWF0IjoxNzI1OTU2MDcyLCJqdGkiOiIwODc1YTA5MmNjNWY0YjJiODA4MGY0ZGM1OTI0OWU4MCIsInVzZXJfaWQiOjN9.Nh1J5e7zuGCQotsILD1Pnv9HOlCxmrWukDEyDH6o8Zc",
-"access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjIwYzQ4MmE1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZfww7J9TscE"
+"refresh": "<refresh token>",
+"access": "<access token>"
 }
+```
 
 ## ACCOUNT CREATION
 
 ### ACCOUNT 1 CREATION
 
-curl localhost:8000/api/create-account/ -H "Content-Type: application/json" -d '{"name": "Account 1", "account_type": "ACC1"}' -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjIwYzQ4MmE1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZfww7J9TscE" | jq
+A regualr user doesnt have permission to create investment account type 1, hence it will fail with 403 status code
 
+> POST api/create-account/
+
+#### Example
+
+```
+curl localhost:8000/api/create-account/ \
+-H "Content-Type: application/json" \
+-d '{"name": "Account 1", "account_type": "ACC1"}'
+-H "Authorization: Bearer <access token>" | jq
+```
+
+#### Returns
+
+```
 {
 "detail": "You do not have permission to perform this action."
 }
+```
 
 ### ACCOUNT 2 CREATION
+
+A user is allowed to create this account type
+
+#### Example
 
 ```
 curl localhost:8000/api/create-account/ \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI2MTI1OTg2LCJpYXQiOjE3MjYxMjIzODYsImp0aSI6ImQ4YjAxYjlkMTZhNjQxMzU5OGRmNmY1YzBhMjc1OWZjIiwidXNlcl9pZCI6M30.S8FAng-n7sW0q5C8VGd8OTtFHI74OD5GHe_HueJQM94" \
+  -H "Authorization: Bearer <access token>" \
   -d '{"name": "Account 2.0", "account_type": "ACC2", "balance": 200}' | jq
 
 ```
+
+#### Returns
 
 ```
 {
@@ -60,10 +137,17 @@ curl localhost:8000/api/create-account/ \
 
 ### ACCOUNT 3 CREATION
 
-curl localhost:8000/api/create-account/ -H "Content-Type: application/json" -d '{"name": "Account 3", "account_type": "ACC3"}' -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6Ik
-pXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjIwYzQ4MmE
-1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZfww7J9TscE" | jq
+The user is allowed to also create account type 3
 
+#### Example
+
+```
+curl localhost:8000/api/create-account/ -H "Content-Type: application/json" -d '{"name": "Account 3", "account_type": "ACC3"}' -H "Authorization: Bearer <access token>" | jq
+```
+
+#### Returns
+
+```
 {
 "name": "Account 3",
 "description": null,
@@ -71,15 +155,29 @@ pXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwN
 "owner": 3,
 "account_type": "ACC3"
 }
+```
 
 ## VIEW ACCOUNT
 
 ### VIEW ACCOUNT TYPE 1
 
-curl localhost:8000/api/view-account/3/ -H "Authorization: Bearer eyJhbGciOiJIUz
-I1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp
-0aSI6IjIwYzQ4MmE1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZ
-fww7J9TscE" | jq
+A user is allowed to view account type 1 and 2.
+The user will see all the transactions and account details
+The account id should be passed as to the API
+
+#### Endpoint:
+
+```
+api/view-account/<account_id>/
+```
+
+#### Example
+
+```
+curl localhost:8000/api/view-account/3/ -H "Authorization: Bearer <access token>" | jq
+```
+
+#### Returns
 
 ```
 {
@@ -97,10 +195,13 @@ fww7J9TscE" | jq
 
 ### VIEW ACCOUNT TYPE 2
 
-curl localhost:8000/api/view-account/5/ -H "Authorization: Bearer eyJhbGciOiJIUz
-I1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp
-0aSI6IjIwYzQ4MmE1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZ
-fww7J9TscE" | jq
+#### Example
+
+```
+curl localhost:8000/api/view-account/5/ -H "Authorization: Bearer <access token>" | jq
+```
+
+#### Returns
 
 ```
 {
@@ -127,10 +228,15 @@ fww7J9TscE" | jq
 
 ### VIEW ACCOUNT TYPE 3
 
-url localhost:8000/api/view-account/2/ -H "Authorization: Bearer eyJhbGciOiJIUz
-I1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTU5NjcyLCJpYXQiOjE3MjU5NTYwNzIsImp
-0aSI6IjIwYzQ4MmE1MWU3NjQwYjc4MTk1MWZmMTVkYTViZTEzIiwidXNlcl9pZCI6M30.mHIYogViHXjwCOa-oyByA-3tdTegfshDZ
-fww7J9TscE" | jq
+User is not allowed to view the account details
+
+#### Example
+
+```
+curl localhost:8000/api/view-account/2/ -H "Authorization: Bearer <access token>" | jq
+```
+
+#### Returns
 
 ```
 {
@@ -140,21 +246,50 @@ fww7J9TscE" | jq
 
 ## UPDATING ACCOUNT
 
-### UPDATING ACCOUNT TYPE 1
+A user is only accepted to update or make a transaction in account 2
 
-curl localhost:8000/api/update-account/3/ -H "Authorization: Bearer eyJhbGciOiJI
-UzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsI
-mp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUD
-v29FjWM7eC0E" -X PUT -d '{"amount_deposited": 1000}' | jq
+#### Endpoint:
 
+```
+PUT api/update-account/<account_id>/
+```
+
+### UPDATING ACCOUNT TYPE 1 AND ACCOUNT TYPE 3
+
+For this 2 account types permission is denied for a the user
+
+#### Example
+
+```
+curl localhost:8000/api/update-account/3/ \
+-H "Authorization: Bearer <access token>" \
+-X PUT -d '{"amount_deposited": 1000}' | jq
+```
+
+#### Returns
+
+```
 {
 "error": "Permission Denied, You do not have permission to perform this action."
 }
+```
 
 ### UPDATING ACOUNT TYPE 2
 
-curl localhost:8000/api/update-account/1/ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUDv29FjWM7eC0E" -X PUT -d '{"balance": 1000}'-H "Content-Type: application/json" | jq
+A user is allowed to update or make transaction, to withdraw -balance is passed and positive is a deposit
 
+#### Example
+
+```
+curl localhost:8000/api/update-account/5/  \
+-H "Authorization: Bearer <access token>" \
+-X PUT -d '{"balance": 1000}'-H \
+"Content-Type: application/json" | jq
+```
+
+#### Returns
+
+```
 {
 "id": 5,
 "account_type": "ACC2",
@@ -163,22 +298,31 @@ curl localhost:8000/api/update-account/1/ -H "Authorization: Bearer eyJhbGciOiJI
 "balance": "1200.00",
 "owner": 3
 }
-
-### UPDATING ACCOUNT TYPE 3
-
-curl localhost:8000/api/update-account/2/ -H "Authorization: Bearer eyJhbGciOiJI
-UzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsI
-mp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUD
-v29FjWM7eC0E" -X PUT -d '{"amount_deposited": 1000}' | jq
-{
-"error": "Permission Denied, You do not have permission to perform this action."
-}
+```
 
 ## DELETING AN ACCOUNT
 
-### DELETING ACCOUNT TYPE 1
+A user can only delete account type 2 the rest permission is denied
 
-curl localhost:8000/api/delete-account/3/ \-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUDv29FjWM7eC0E" \-X DELETE | jq
+#### Endpoint:
+
+```
+DELETE api/delete-account/<account_id>/
+```
+
+### DELETING ACCOUNT TYPE 1 AND ACCOUNT TYPE 3
+
+For these account types permission id denied and a status is 403
+
+#### Example
+
+```
+curl localhost:8000/api/delete-account/3/ \
+-H "Authorization: Bearer <access token>" \
+-X DELETE
+```
+
+#### Returns
 
 ```
 {
@@ -188,26 +332,41 @@ curl localhost:8000/api/delete-account/3/ \-H "Authorization: Bearer eyJhbGciOiJ
 
 ### DLEETING ACCOUNT TYPE 2
 
-curl localhost:8000/api/delete-account/1/ \-H "Authorization: Bearer eyJhbGciOiJI
-UzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsI
-mp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUD
-v29FjWM7eC0E" \-X DELETE | jq
+#### Example
 
 ```
-"Sucessfully deletered"
+curl localhost:8000/api/delete-account/1/ \
+-H "Authorization: Bearer <access token>"
+\-X DELETE
 ```
 
-### DELETING ACCOUNT TYPE 3
-
-curl localhost:8000/api/delete-account/2/ \-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1OTYzOTU0LCJpYXQiOjE3MjU5NTYwNzIsImp0aSI6IjJiZTc2YzUwY2U4MTQ5NDlhNjIyMThhYjQ5MDQ0OTdjIiwidXNlcl9pZCI6M30.u6lKL9yojif98fTVnSjT7wLfW1i0HUDv29FjWM7eC0E" \-X DELETE | jq
+#### Returns
 
 ```
-{
-  "error": "Permission Denied, You do not have permission to perform this action."
-}
+"Sucessfully deleted"
 ```
 
 ### ADMIN GETTING TRANSACTION OF OF A USER
+
+An admin must log in and obtain an access token to use this API. The user_id is required in the API request.
+
+Optional filters include start_date and end_date.
+The start_date should be later than the end_date, and the end_date must be in the past.
+If no start_date is provided, today's date is used.
+
+#### Endpoint:
+
+```
+GET api/view-user-accounts/<user_id>/
+```
+
+#### Example
+
+```
+curl localhost:8000/api/view-user-accounts/1/ -H "Authorization: Bearer <token> "
+```
+
+#### Returns
 
 ```
 {

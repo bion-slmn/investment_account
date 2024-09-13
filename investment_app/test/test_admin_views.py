@@ -38,8 +38,8 @@ class AdminViewTest(APITestCase):
         self.assertIn('transactions', response.data)
         
         self.assertEqual(response.data['Username'], self.regular_user.username)
-        self.assertEqual(response.data['total_balance'], 1000)  # Check total balance is correct
-        self.assertEqual(len(response.data['transactions']), 1)  # Check the number of transactions
+        self.assertEqual(response.data['total_balance'], 1000)
+        self.assertEqual(len(response.data['transactions']), 1) 
 
     def test_get_user_transactions_with_date_range(self):
         """Test filtering user transactions within a valid date range."""
