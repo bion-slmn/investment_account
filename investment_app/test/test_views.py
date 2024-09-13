@@ -105,7 +105,7 @@ class AccountViewTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_2.id])
         response = self.client.get(url)
-
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['account']['id'], self.account_2.id)
         self.assertEqual(len(response.data['transcations']), 1)
