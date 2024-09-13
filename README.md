@@ -358,6 +358,11 @@ If no start_date is provided, today's date is used.
 
 ```
 GET api/view-user-accounts/<user_id>/
+
+GET api/view-user-accounts/<user_id>/?end_date=2024-07-01
+
+GET api/view-user-accounts/<user_id>/?end_date=2024-07-01&start_date=2024-08-03
+
 ```
 
 #### Example
