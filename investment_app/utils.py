@@ -4,6 +4,7 @@ from .serializer import TransactionSeializer
 from django.http import HttpRequest
 from typing import List, Optional
 from .signals import account_changed
+from django.core.cache import cache
 
 
 def get_transactions(
@@ -55,3 +56,15 @@ def create_transaction(
             user=request.user,
             instance=instance
         )
+
+def delete_caches(cache_keys: list) -> None:
+    """
+    Deletes multiple cache entries in a single operation.
+
+    Args:
+        cache_keys (list): A list of cache key strings to delete.
+
+    Example:
+        delete_caches([f'account_id_{account_id}', f'user_id_{instance.owner}'])
+    """
+    cache.delete_many(cache_keys)

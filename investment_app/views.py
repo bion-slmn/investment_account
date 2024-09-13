@@ -10,12 +10,14 @@ from .serializer import InvestmentAccountSerializer, UserSerializer, DateSeriali
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
-from .utils import get_transactions, create_transaction
+from .utils import get_transactions, create_transaction, delete_caches
 from django.http import Http404
 from django.contrib.auth.models import User
 from datetime import date
 from typing import Dict
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
+
 
 
 
@@ -59,12 +61,18 @@ class AccountView(APIView):
         Returns:
             Response: A Response object containing the serialized account data.
         """
+        cache_key = f'account_id_{account_id}'
         account = self._check_account_permission(request, account_id)
-        transactions = get_transactions(account)
-        results = {
-            'account': InvestmentAccountSerializer(account).data,
-            'transcations': transactions or []
-        }
+        
+        if cached_data := cache.get(cache_key):
+            results = cached_data
+        else:
+            transactions = get_transactions(account)
+            results = {
+                'account': InvestmentAccountSerializer(account).data,
+                'transcations': transactions or []
+            }
+            cache.set(cache_key, results, timeout=5*60*60)
         return Response(results)
 
     @handle_exceptions
@@ -92,7 +100,6 @@ class AccountView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
         instance = serializer.save(owner=request.user)
         create_transaction(request, instance)
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @handle_exceptions
@@ -118,6 +125,7 @@ class AccountView(APIView):
         if serializer.is_valid():
             instance = serializer.save()
             create_transaction(request, instance)
+            delete_caches([f'account_id_{account_id}', f'user_id_{instance.owner}'])
             return Response(serializer.data, 200)
         return Response(serializer.errors, 400)
 
@@ -190,14 +198,20 @@ class AdminView(APIView):
         start_date = request.query_params.get('start_date') or today
         end_date = request.query_params.get('end_date')
         
-        user = self.get_filtered_user(user_id, start_date, end_date)     
-        results = self.get_user_transactions(user)
+        cache_key = f'user_id_{user_id}'
+        cache_data = cache.get(cache_key)
+        
+        if not end_date and cache_data:
+            results = cache_data
+            
+        else:
+            user = self.get_filtered_user(user_id, start_date, end_date)     
+            results = self.get_user_transactions(user, start_date, end_date)
 
-        results['From'] = start_date
-        results['To'] = end_date or "All Transactions"
+            
         return Response(results, 200)
     
-    def get_user_transactions(self, user: User) -> Dict[str, str]:
+    def get_user_transactions(self, user: User, start_date: date, end_date: date = None) -> Dict[str, str]:
         """Retrieve a summary of a user's transactions and total balance.
 
         Args:
@@ -210,7 +224,9 @@ class AdminView(APIView):
         results = {
             'Username': user.username,
             'total_balance' : 0,
-            'transactions' : []
+            'transactions' : [],
+            'From' :start_date,
+            'To' :end_date or "All Transactions"
         }
         for account in user.accounts.all():
             results['total_balance'] += account.balance
@@ -218,6 +234,10 @@ class AdminView(APIView):
             for transaction in transactions:
                 transaction['account_type'] = account.account_type
             results['transactions'].extend(transactions)
+
+        if not end_date:
+            cache_key = f'user_id_{user.id}'
+            cache.set(cache_key, results, timeout=2*60*60)
 
         return results
     

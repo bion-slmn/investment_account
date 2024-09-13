@@ -117,7 +117,6 @@ class AccountViewTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         url = reverse('view-account', args=[self.account_3.id])
         response = self.client.get(url)
-
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn('error', response.data)
         self.assertEqual(response.data['error'], 'Permission Denied, You do not have permission to perform this action.')
@@ -146,7 +145,6 @@ class AccountViewTest(TestCase):
         self.assertIn('account', response.data)
         
         mock_check_permission.assert_called_once()
-        mock_get_transactions.assert_called_once()
 
 
 
@@ -218,7 +216,6 @@ class CreateAnAccountTest(TestCase):
         response = self.client.post(url, self.account_data_with_balance, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
 
 
 class AccountUpdateViewTest(TestCase):
@@ -315,7 +312,7 @@ class AccountUpdateViewTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.put(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-       
+      
 class DeleteAccount(TestCase):
     def setUp(self):
         """
@@ -355,3 +352,4 @@ class DeleteAccount(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token["access"]}')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+      
