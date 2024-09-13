@@ -21,7 +21,7 @@ class TestInvestmentAccount(TestCase):
         self.assertEqual(account.description, "This is a test account")
         self.assertEqual(account.balance, 1000.00)
         self.assertEqual(account.owner, self.user)
-        self.assertEqual(account.pk, not None)
+        self.assertTrue(account.pk)
 
     def test_default_values(self):
         account = InvestmentAccount(owner=self.user)
