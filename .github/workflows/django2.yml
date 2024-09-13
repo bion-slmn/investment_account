@@ -38,10 +38,4 @@ jobs:
       - name: Run Tests with Coverage
         run: |
           pip install coverage
-          coverage run --source=. manage.py test
-
-      - name: Generate Coverage Report
-        run: |
-          coverage report
-          # Optionally, generate an HTML report for easier viewing
-          coverage html
+          python3 manage.py test
