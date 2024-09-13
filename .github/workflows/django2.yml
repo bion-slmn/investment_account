@@ -51,7 +51,7 @@ jobs:
       - name: Run Tests
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/github_actions
-          REDIS_URL: redis://redis:6379/?db=0
+          REDIS_URL: redis://redis:6379/
         run: |
           pip install coverage
           python3 manage.py test
