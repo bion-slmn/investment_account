@@ -129,7 +129,7 @@ class AccountViewTest(TestCase):
         self.assertIn('error', response.data)
         self.assertEqual(
             response.data['error'],
-            'Permission Denied, You do not have permission to perform this action.')
+            'You do not have permission to perform this action.')
 
     def test_unauthenticated_access(self):
         """
@@ -339,7 +339,7 @@ class AccountUpdateViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
             response.data['error'],
-            'Permission Denied, You do not have permission to perform this action.')
+            'You do not have permission to perform this action.')
 
     def test_update_account_invalid_data(self):
         """
