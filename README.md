@@ -10,9 +10,11 @@ This ensures a clear and auditable trail for all balance adjustments.
 
 #### Account Permissions
 
-ACC1, a user can only View the account and the transactions
-ACC2, a user can read, create, update and even delete the account and all the transactions
-ACC3, a user can only create the account
+For **ACC1**, the user has **view-only** permissions, allowing them to access and view the account and its associated transactions.
+
+For **ACC2**, the user has **full control** over the account and transactions, with the ability to **read, create, update, and delete** both the account and its transactions.
+
+For **ACC3**, the user has permission to **create** the account, but no other actions (viewing, updating, or deleting) are allowed.
 
 ## USER CREATION
 
