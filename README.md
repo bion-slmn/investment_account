@@ -16,6 +16,38 @@ For **ACC2**, the user has **full control** over the account and transactions, w
 
 For **ACC3**, the user has permission to **create** the account, but no other actions (viewing, updating, or deleting) are allowed.
 
+Here’s a refined version of your instruction:
+
+---
+
+## Getting Started
+
+This project uses **Django** and **Redis** for caching. To set up the project, follow the steps below:
+
+### 1. Install Required Packages
+
+Ensure you have all the necessary dependencies installed by running:
+
+```
+pip install -r requirements.txt
+```
+
+### 2. Start Redis Server
+
+Start the Redis server with the following command:
+
+```
+sudo service redis-server start
+```
+
+### 3. Run the Django Application
+
+Once Redis is running, start the Django development server:
+
+```
+python3 manage.py runserver
+```
+
 ## USER CREATION
 
 ### Regular User
