@@ -1,10 +1,12 @@
 # investment_account
 
-This project create an API'S for managing an Investment Accounts
-A user can have 3 account types name ACC1, ACC2, ACC3.
-An account must have, a name, owner, account type and balance with a default of 0.
-When ever the balance changes a transaction is recorded.
-A withdraw the balance is passed as a negavite number and all positive are deposits.
+This project involves the creation of APIs to manage investment accounts.
+Each user can hold three account types, named ACC1, ACC2, and ACC3.
+An account must include the following attributes: a name, an owner, an account type, and a balance, which defaults to 0.
+
+When the account balance changes, a transaction is recorded.
+Withdrawals are represented as negative transactions, while deposits are recorded as positive values.
+This ensures a clear and auditable trail for all balance adjustments.
 
 #### Account Permissions
 
@@ -142,7 +144,10 @@ The user is allowed to also create account type 3
 #### Example
 
 ```
-curl localhost:8000/api/create-account/ -H "Content-Type: application/json" -d '{"name": "Account 3", "account_type": "ACC3"}' -H "Authorization: Bearer <access token>" | jq
+curl localhost:8000/api/create-account/ \
+-H "Content-Type: application/json" \
+-d '{"name": "Account 3", "account_type": "ACC3"}' \
+-H "Authorization: Bearer <access token>" | jq
 ```
 
 #### Returns
@@ -174,7 +179,8 @@ api/view-account/<account_id>/
 #### Example
 
 ```
-curl localhost:8000/api/view-account/3/ -H "Authorization: Bearer <access token>" | jq
+curl localhost:8000/api/view-account/3/ \
+-H "Authorization: Bearer <access token>" | jq
 ```
 
 #### Returns
@@ -198,7 +204,8 @@ curl localhost:8000/api/view-account/3/ -H "Authorization: Bearer <access token>
 #### Example
 
 ```
-curl localhost:8000/api/view-account/5/ -H "Authorization: Bearer <access token>" | jq
+curl localhost:8000/api/view-account/5/ \
+-H "Authorization: Bearer <access token>" | jq
 ```
 
 #### Returns
@@ -233,7 +240,8 @@ User is not allowed to view the account details
 #### Example
 
 ```
-curl localhost:8000/api/view-account/2/ -H "Authorization: Bearer <access token>" | jq
+curl localhost:8000/api/view-account/2/ \
+-H "Authorization: Bearer <access token>" | jq
 ```
 
 #### Returns
